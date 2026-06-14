@@ -1,0 +1,64 @@
+services:
+  # --------------------------------------------------------------------------------
+  # BACKEND (Docker)
+  # --------------------------------------------------------------------------------
+  - type: web
+    name: EduStream-backend
+    env: docker
+    dockerContext: ./server
+    dockerfilePath: ./server/Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health # Ensure this route exists in your Express app
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: NODE_ENV
+        value: production
+      - key: PYTHON_BIN
+        value: python3
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: MONGO_URI
+        sync: false # User will provide Atlas URI
+      - key: SERVER_URL
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+
+      # Authentication (Google OAuth)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+      # AI Services (Gemini)
+      - key: GEMINI_API_KEY_SUMMARY
+        sync: false
+      - key: GEMINI_API_KEY_QUIZ
+        sync: false
+
+      # External APIs
+      - key: YOUTUBE_API_KEY
+        sync: false
+
+      - key: TRANSCRIPT_LANGS
+        value: en,en-US,en-GB,en-IN,hi
+
+  # --------------------------------------------------------------------------------
+  # FRONTEND (Static Site)
+  # --------------------------------------------------------------------------------
+  - type: static
+    name: EduStream-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    plan: free
+    region: oregon
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: EduStream-backend
+          property: url
+

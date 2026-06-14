@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://EduStream.netlify.app/sitemap.xml
+
